@@ -32,7 +32,7 @@ stroke.Color = Color3.fromRGB(255,255,255)
 local corner = Instance.new("UICorner", frame)
 corner.CornerRadius = UDim.new(1,0)
 
--- CRÉDITO: "made by" branco, "ragkk01" RGB
+-- CRÉDITO: "made by" na cor #FFFFFF (branco), "ragkk01" RGB
 local credit = Instance.new("TextLabel")
 credit.Parent = gui
 credit.BackgroundTransparency = 1
@@ -43,20 +43,20 @@ credit.TextXAlignment = Enum.TextXAlignment.Right
 credit.Font = Enum.Font.SourceSansBold
 credit.TextSize = 14
 credit.TextTransparency = 0
-credit.RichText = true  -- permite formatação por tags
+credit.RichText = true
 
 -- Anima apenas o "ragkk01" com RGB
 local hue = 0
 RunService.RenderStepped:Connect(function()
     hue = (hue + 0.01) % 1
     local rgbColor = Color3.fromHSV(hue, 1, 1)
-    -- Converte Color3 para formato hex #FFFFFF
+    -- Converte Color3 para formato hex #RRGGBB
     local hex = string.format("#%02x%02x%02x",
         math.floor(rgbColor.R * 255),
         math.floor(rgbColor.G * 255),
         math.floor(rgbColor.B * 255)
     )
-    credit.Text = 'made by <font color="' .. hex .. '">ragkk01</font>'
+    credit.Text = '<font color="#FFFFFF">made by</font> <font color="' .. hex .. '">ragkk01</font>'
 end)
 
 -- IMPORTANTE: fazer o gui ignorar os insets da tela (mobile)
