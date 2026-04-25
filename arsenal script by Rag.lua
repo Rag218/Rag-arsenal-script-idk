@@ -32,17 +32,29 @@ stroke.Color = Color3.fromRGB(255,255,255)
 local corner = Instance.new("UICorner", frame)
 corner.CornerRadius = UDim.new(1,0)
 
+-- CRÉDITO RGB PARA MOBILE
 local credit = Instance.new("TextLabel")
 credit.Parent = gui
 credit.BackgroundTransparency = 1
-credit.Position = UDim2.new(0, 6, 0, 4)
-credit.Size = UDim2.new(0, 160, 0, 18)
+credit.Position = UDim2.new(1, -10, 0, 10)   -- canto superior direito com pequeno offset
+credit.AnchorPoint = Vector2.new(1, 0)       -- ancora no canto direito
+credit.Size = UDim2.new(0, 180, 0, 20)
 credit.Text = "made by ragkk01rgb"
-credit.TextXAlignment = Enum.TextXAlignment.Left
-credit.Font = Enum.Font.Code
-credit.TextSize = 12
-credit.TextTransparency = 0.35
+credit.TextXAlignment = Enum.TextXAlignment.Right
+credit.Font = Enum.Font.SourceSansBold   -- mais legível no mobile
+credit.TextSize = 14
+credit.TextTransparency = 0   -- sem transparência para garantir visibilidade
 credit.TextColor3 = Color3.fromRGB(255,255,255)
+
+-- Anima RGB
+local hue = 0
+RunService.RenderStepped:Connect(function()
+    hue = (hue + 0.01) % 1
+    credit.TextColor3 = Color3.fromHSV(hue, 1, 1)
+end)
+
+-- IMPORTANTE: fazer o gui ignorar os insets da tela (mobile)
+gui.IgnoreGuiInset = true
 
 -- TEAM
 local function GetTeam(plr)
