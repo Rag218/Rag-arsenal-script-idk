@@ -1,0 +1,250 @@
+--// AIMBOT FOV + TEAM CHECK + WALLCHECK
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- CONFIG
+local FOV = 180
+
+-- REMOVE GUI ANTIGA
+pcall(function()
+	game.CoreGui.AimFOV:Destroy()
+end)
+
+-- GUI CIRCULO
+local gui = Instance.new("ScreenGui")
+gui.Name = "AimFOV"
+gui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Parent = gui
+frame.Size = UDim2.new(0, FOV * 2, 0, FOV * 2)
+frame.Position = UDim2.new(0.5, -FOV, 0.5, -FOV)
+frame.BackgroundTransparency = 1
+
+local stroke = Instance.new("UIStroke", frame)
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(255,255,255)
+
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(1,0)
+
+-- TEAM
+local function GetTeam(plr)
+	local status = plr:FindFirstChild("Status")
+	if status then
+		local team = status:FindFirstChild("Team")
+		if team then
+			return tostring(team.Value)
+		end
+	end
+	return "NONE"
+end
+
+-- WALLCHECK
+local function Visible(part, char)
+	local origin = Camera.CFrame.Position
+	local direction = part.Position - origin
+
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Blacklist
+	params.FilterDescendantsInstances = {
+		LocalPlayer.Character,
+		char
+	}
+
+	local hit = workspace:Raycast(origin, direction, params)
+
+	if hit then
+		return false
+	end
+
+	return true
+end
+
+-- PLAYER MAIS PRÓXIMO
+local function GetClosest()
+	local closest = nil
+	local shortest = math.huge
+	local myTeam = GetTeam(LocalPlayer)
+
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer then
+			local char = plr.Character
+
+			if char and char:FindFirstChild("Head") and char:FindFirstChild("Humanoid") then
+				if char.Humanoid.Health > 0 then
+
+					if GetTeam(plr) ~= myTeam then
+						local head = char.Head
+						local pos, visible = Camera:WorldToViewportPoint(head.Position)
+
+						if visible then
+							local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+							local dist = (Vector2.new(pos.X,pos.Y) - center).Magnitude
+
+							if dist <= FOV and dist < shortest then
+								if Visible(head, char) then
+									shortest = dist
+									closest = head
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return closest
+end
+
+-- AIMBOT
+RunService.RenderStepped:Connect(function()
+	local target = GetClosest()
+
+	if target then
+		Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
+	end
+end)
+--// ESP COMPLETO (SEM HP)
+--// Linha até centro do hitbox
+--// Team TCB = Azul custom | TRC = Vermelho
+--// Chams no corpo
+--// Nome acima da cabeça
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local ESPFolder = Instance.new("Folder")
+ESPFolder.Name = "ESP_FOLDER"
+ESPFolder.Parent = game.CoreGui
+
+local Cache = {}
+
+-- TEAM
+local function GetTeam(plr)
+	local status = plr:FindFirstChild("Status")
+	if status then
+		local team = status:FindFirstChild("Team")
+		if team then
+			return tostring(team.Value)
+		end
+	end
+	return "NONE"
+end
+
+-- COR
+local function GetColor(plr)
+	local team = GetTeam(plr)
+
+	if team == "TCB" then
+		return Color3.fromRGB(13,105,172) -- azul novo
+	elseif team == "TRC" then
+		return Color3.fromRGB(255,0,0)
+	end
+
+	return Color3.fromRGB(255,255,255)
+end
+
+-- CRIAR ESP
+local function CreateESP(plr)
+	local line = Drawing.new("Line")
+	line.Thickness = 2
+	line.Transparency = 1
+
+	local name = Drawing.new("Text")
+	name.Size = 16
+	name.Center = true
+	name.Outline = true
+
+	local highlight = Instance.new("Highlight")
+	highlight.FillTransparency = 0.55
+	highlight.OutlineTransparency = 0
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Parent = ESPFolder
+
+	Cache[plr] = {
+		Line = line,
+		Name = name,
+		Cham = highlight
+	}
+end
+
+-- REMOVER
+local function RemoveESP(plr)
+	if Cache[plr] then
+		for _,v in pairs(Cache[plr]) do
+			pcall(function() v:Remove() end)
+			pcall(function() v:Destroy() end)
+		end
+		Cache[plr] = nil
+	end
+end
+
+for _,plr in pairs(Players:GetPlayers()) do
+	if plr ~= LocalPlayer then
+		CreateESP(plr)
+	end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+	if plr ~= LocalPlayer then
+		CreateESP(plr)
+	end
+end)
+
+Players.PlayerRemoving:Connect(RemoveESP)
+
+RunService.RenderStepped:Connect(function()
+	local center = Vector2.new(
+		Camera.ViewportSize.X / 2,
+		Camera.ViewportSize.Y / 2
+	)
+
+	for plr,data in pairs(Cache) do
+		local char = plr.Character
+		local color = GetColor(plr)
+
+		if char and char:FindFirstChild("HumanoidRootPart")
+		and char:FindFirstChild("Head")
+		and char:FindFirstChild("Humanoid")
+		and char.Humanoid.Health > 0 then
+
+			local root = char.HumanoidRootPart
+			local head = char.Head
+
+			local pos, onscreen = Camera:WorldToViewportPoint(root.Position)
+			local headPos = Camera:WorldToViewportPoint(head.Position)
+
+			if onscreen then
+				data.Line.Visible = true
+				data.Line.Color = color
+				data.Line.From = center
+				data.Line.To = Vector2.new(pos.X,pos.Y)
+
+				data.Name.Visible = true
+				data.Name.Color = color
+				data.Name.Text = plr.Name
+				data.Name.Position = Vector2.new(headPos.X, headPos.Y - 20)
+
+				data.Cham.Adornee = char
+				data.Cham.FillColor = color
+				data.Cham.OutlineColor = color
+				data.Cham.Enabled = true
+			else
+				data.Line.Visible = false
+				data.Name.Visible = false
+				data.Cham.Enabled = false
+			end
+		else
+			data.Line.Visible = false
+			data.Name.Visible = false
+			data.Cham.Enabled = false
+		end
+	end
+end)
