@@ -1,4 +1,4 @@
---// AIMBOT FOV + TEAM CHECK + WALLCHECK
+--// RAG ARSENAL CHEAT
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -16,6 +16,7 @@ end)
 -- GUI CIRCULO
 local gui = Instance.new("ScreenGui")
 gui.Name = "AimFOV"
+gui.ResetOnSpawn = false
 gui.Parent = game.CoreGui
 
 local frame = Instance.new("Frame")
@@ -30,6 +31,18 @@ stroke.Color = Color3.fromRGB(255,255,255)
 
 local corner = Instance.new("UICorner", frame)
 corner.CornerRadius = UDim.new(1,0)
+
+local credit = Instance.new("TextLabel")
+credit.Parent = gui
+credit.BackgroundTransparency = 1
+credit.Position = UDim2.new(0, 6, 0, 4)
+credit.Size = UDim2.new(0, 160, 0, 18)
+credit.Text = "made by ragkk01rgb"
+credit.TextXAlignment = Enum.TextXAlignment.Left
+credit.Font = Enum.Font.Code
+credit.TextSize = 12
+credit.TextTransparency = 0.35
+credit.TextColor3 = Color3.fromRGB(255,255,255)
 
 -- TEAM
 local function GetTeam(plr)
@@ -76,7 +89,6 @@ local function GetClosest()
 
 			if char and char:FindFirstChild("Head") and char:FindFirstChild("Humanoid") then
 				if char.Humanoid.Health > 0 then
-
 					if GetTeam(plr) ~= myTeam then
 						local head = char.Head
 						local pos, visible = Camera:WorldToViewportPoint(head.Position)
@@ -109,16 +121,8 @@ RunService.RenderStepped:Connect(function()
 		Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
 	end
 end)
---// ESP COMPLETO (SEM HP)
---// Linha até centro do hitbox
---// Team TCB = Azul custom | TRC = Vermelho
---// Chams no corpo
---// Nome acima da cabeça
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
+-- ESP/WALLHACS
 
 local ESPFolder = Instance.new("Folder")
 ESPFolder.Name = "ESP_FOLDER"
@@ -126,24 +130,11 @@ ESPFolder.Parent = game.CoreGui
 
 local Cache = {}
 
--- TEAM
-local function GetTeam(plr)
-	local status = plr:FindFirstChild("Status")
-	if status then
-		local team = status:FindFirstChild("Team")
-		if team then
-			return tostring(team.Value)
-		end
-	end
-	return "NONE"
-end
-
--- COR
 local function GetColor(plr)
 	local team = GetTeam(plr)
 
 	if team == "TCB" then
-		return Color3.fromRGB(13,105,172) -- azul novo
+		return Color3.fromRGB(13,105,172)
 	elseif team == "TRC" then
 		return Color3.fromRGB(255,0,0)
 	end
@@ -151,7 +142,6 @@ local function GetColor(plr)
 	return Color3.fromRGB(255,255,255)
 end
 
--- CRIAR ESP
 local function CreateESP(plr)
 	local line = Drawing.new("Line")
 	line.Thickness = 2
@@ -175,7 +165,6 @@ local function CreateESP(plr)
 	}
 end
 
--- REMOVER
 local function RemoveESP(plr)
 	if Cache[plr] then
 		for _,v in pairs(Cache[plr]) do
